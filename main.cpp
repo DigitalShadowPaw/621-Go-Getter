@@ -4,6 +4,8 @@
 
 using namespace std;
 
+// TODO make the function witch make the url
+
 // Callback function to write the received data to a string
 size_t writeCallback(void *contents, size_t size, size_t nmemb, std::string *buffer) {
     size_t totalSize = size * nmemb;
@@ -95,7 +97,9 @@ extern const int limit = 10;
 
 // username and api key
 string username, apiKey;
-vector<string> tags;
+
+vector<string> tags; // TODO make tag
+
 int main() {
     //path to the secrets folder
     const string folderPath = "secrets"; 
