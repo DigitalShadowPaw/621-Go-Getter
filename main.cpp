@@ -3,12 +3,13 @@
 #include <curl/curl.h>
 
 using namespace std;
-// // Callback function to write the received data to a string
-// size_t writeCallback(void *contents, size_t size, size_t nmemb, std::string *buffer) {
-//     size_t totalSize = size * nmemb;
-//     buffer->append((char *)contents, totalSize);
-//     return totalSize;
-// }
+
+// Callback function to write the received data to a string
+size_t writeCallback(void *contents, size_t size, size_t nmemb, std::string *buffer) {
+    size_t totalSize = size * nmemb;
+    buffer->append((char *)contents, totalSize);
+    return totalSize;
+}
 
 // Function to create folder if it doesn't exist
 bool createFolder(const std::string& folderPath) {
