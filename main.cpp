@@ -94,7 +94,7 @@ extern const int limit = 10;
 
 // username and api key
 string username, apiKey;
-
+vector<string> tags;
 int main() {
     //path to the secrets folder
     const string folderPath = "secrets"; 

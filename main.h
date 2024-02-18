@@ -6,6 +6,7 @@
 #include <fstream>
 #include <string>
 #include <sys/stat.h>
+#include <vector>
 
 using namespace std;
 
