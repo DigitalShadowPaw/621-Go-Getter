@@ -5,7 +5,8 @@
 using namespace std;
 
 // TODO make the function witch make the url
-
+// TODO over and under sektions for function grups
+// TODO make pool downloader
 // Callback function to write the received data to a string
 size_t writeCallback(void *contents, size_t size, size_t nmemb, std::string *buffer) {
     size_t totalSize = size * nmemb;
