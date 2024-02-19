@@ -5,14 +5,20 @@
 using namespace std;
 
 // TODO make the function witch make the url
-// TODO over and under sektions for function grups
 // TODO make pool downloader
+
+// === Begin  curl downloader ===
+
 // Callback function to write the received data to a string
 size_t writeCallback(void *contents, size_t size, size_t nmemb, std::string *buffer) {
     size_t totalSize = size * nmemb;
     buffer->append((char *)contents, totalSize);
     return totalSize;
 }
+
+// === End  curl downloader ===
+
+// === Begin creating secrets folder and key file ===
 
 // Function to create folder if it doesn't exist
 bool createFolder(const std::string& folderPath) {
@@ -92,6 +98,8 @@ bool saveCredentials(const std::string& folderPath) {
     std::cout << "Credentials saved to file: " << filePath << std::endl;
     return true;
 }
+
+// === end creating secrets folder and key file ===
 
 // the number of posts it get at a time min 1, max 320
 extern const int limit = 10;
