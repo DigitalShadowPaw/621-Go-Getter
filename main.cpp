@@ -18,8 +18,7 @@ string urlConstrokter(string test)// TODO make the function witch make the url
     return test;
 }
 
-int downloader()// TODO make pool downloader
-{
+int poolDownloader()// TODO make pool downloader
     // Initialize libcurl
     curl_global_init(CURL_GLOBAL_ALL);
 
