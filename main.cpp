@@ -4,9 +4,6 @@
 
 using namespace std;
 
-// TODO make the function witch make the url
-// TODO make pool downloader
-
 // === Begin  curl downloader ===
 
 // Callback function to write the received data to a string
@@ -14,6 +11,49 @@ size_t writeCallback(void *contents, size_t size, size_t nmemb, std::string *buf
     size_t totalSize = size * nmemb;
     buffer->append((char *)contents, totalSize);
     return totalSize;
+}
+
+string urlConstrokter(string test)// TODO make the function witch make the url
+{
+    return test;
+}
+
+int downloader()// TODO make pool downloader
+{
+    // Initialize libcurl
+    curl_global_init(CURL_GLOBAL_ALL);
+
+    // Create a CURL handle
+    CURL *curl = curl_easy_init();
+    if (curl) {
+        // Set the URL to fetch
+        curl_easy_setopt(curl, CURLOPT_URL, "https://www.example.com");
+
+        // Set the callback function to receive the data
+        std::string response;
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+
+        // Perform the request
+        CURLcode res = curl_easy_perform(curl);
+        if (res == CURLE_OK) {
+            // Request successful, print the received data
+            std::cout << "Received data:\n" << response << std::endl;
+        } else {
+            // Request failed, print error message
+            std::cerr << "Failed to perform request: " << curl_easy_strerror(res) << std::endl;
+        }
+
+        // Clean up
+        curl_easy_cleanup(curl);
+    } else {
+        std::cerr << "Failed to initialize libcurl" << std::endl;
+    }
+
+    // Clean up libcurl
+    curl_global_cleanup();
+
+    return 0;
 }
 
 // === End  curl downloader ===
@@ -128,40 +168,3 @@ int main() {
 
     return 0;
 }
-
-// int main() {
-//     Initialize libcurl
-//     curl_global_init(CURL_GLOBAL_ALL);
-
-//     Create a CURL handle
-//     CURL *curl = curl_easy_init();
-//     if (curl) {
-//         // Set the URL to fetch
-//         curl_easy_setopt(curl, CURLOPT_URL, "https://www.example.com");
-
-//         // Set the callback function to receive the data
-//         std::string response;
-//         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
-//         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-
-//         // Perform the request
-//         CURLcode res = curl_easy_perform(curl);
-//         if (res == CURLE_OK) {
-//             // Request successful, print the received data
-//             std::cout << "Received data:\n" << response << std::endl;
-//         } else {
-//             // Request failed, print error message
-//             std::cerr << "Failed to perform request: " << curl_easy_strerror(res) << std::endl;
-//         }
-
-//         // Clean up
-//         curl_easy_cleanup(curl);
-//     } else {
-//         std::cerr << "Failed to initialize libcurl" << std::endl;
-//     }
-
-//     // Clean up libcurl
-//     curl_global_cleanup();
-
-//     return 0;
-// }
