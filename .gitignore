@@ -478,3 +478,6 @@ FodyWeavers.xsd
 #secrets
 secrets/
 #End secrets
+
+main.dSYM/
+main
