@@ -24,7 +24,7 @@ string urlConstrokter(string test)// TODO make the function witch make the url
     return test;
 }
 
-int poolDownloader()// TODO make pool downloader
+void poolDownloader(string &response, string url)// TODO make pool downloader
 {
     // Initialize libcurl
     curl_global_init(CURL_GLOBAL_ALL);
@@ -33,10 +33,12 @@ int poolDownloader()// TODO make pool downloader
     CURL *curl = curl_easy_init();
     if (curl) {
         // Set the URL to fetch
-        curl_easy_setopt(curl, CURLOPT_URL, "https://www.example.com");
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        
+        // Set the user agent
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, "621-go-Getter/0.1 (by ShadowDarkPaw on e621)");
 
         // Set the callback function to receive the data
-        std::string response;
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 
@@ -44,10 +46,10 @@ int poolDownloader()// TODO make pool downloader
         CURLcode res = curl_easy_perform(curl);
         if (res == CURLE_OK) {
             // Request successful, print the received data
-            std::cout << "Received data:\n" << response << std::endl;
+            cout << "Received data:\n" << response << endl;
         } else {
             // Request failed, print error message
-            std::cerr << "Failed to perform request: " << curl_easy_strerror(res) << std::endl;
+            cerr << "Failed to perform request: " << curl_easy_strerror(res) << endl;
         }
 
         // Clean up
@@ -58,11 +60,9 @@ int poolDownloader()// TODO make pool downloader
 
     // Clean up libcurl
     curl_global_cleanup();
-
-    return 0;
 }
 
-// === End  curl downloader ===
+// === End curl downloader ===
 
 // === Begin creating secrets folder and key file ===
 
@@ -184,6 +184,10 @@ int main()
             return 1;
         }
     }
-    cout << username << endl << apiKey << endl;
+    
+    string response;
+    
+    poolDownloader(response, "https://e621.net/pools/38173.json");
+    
     return 0;
 }
