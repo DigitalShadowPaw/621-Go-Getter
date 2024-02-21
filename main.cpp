@@ -1,5 +1,8 @@
-#include "main.h"
-
+//
+//  main.cpp
+//  621-Go-Getter
+//
+#include "main.hpp"
 #include <curl/curl.h>
 
 using namespace std;
@@ -7,7 +10,8 @@ using namespace std;
 // === Begin  curl downloader ===
 
 // Callback function to write the received data to a string
-size_t writeCallback(void *contents, size_t size, size_t nmemb, std::string *buffer) {
+size_t writeCallback(void *contents, size_t size, size_t nmemb, std::string *buffer) 
+{
     size_t totalSize = size * nmemb;
     buffer->append((char *)contents, totalSize);
     return totalSize;
@@ -19,7 +23,7 @@ string urlConstrokter(string test)// TODO make the function witch make the url
 }
 
 int poolDownloader()// TODO make pool downloader
-{   
+{
     // Initialize libcurl
     curl_global_init(CURL_GLOBAL_ALL);
 
@@ -151,7 +155,7 @@ vector<string> tags; // TODO make tag
 
 int main() {
     //path to the secrets folder
-    const string folderPath = "secrets"; 
+    const string folderPath = "secrets";
 
     // Create folder if it doesn't exist
     if (!createFolder(folderPath)) {
@@ -159,11 +163,11 @@ int main() {
     }
 
     // Read credentials from file
-    if (!readCredentials(folderPath)) { 
+    if (!readCredentials(folderPath)) {
         cout << "No credentials found." << endl << "Please enter your credentials:" << endl;
         if (!saveCredentials(folderPath)) {
             return 1;
-        }   
+        }
     }
 
     return 0;
