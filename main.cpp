@@ -5,6 +5,8 @@
 #include "main.hpp"
 #include <curl/curl.h>
 
+namespace fs = std::filesystem;
+
 using namespace std;
 
 // === Begin  curl downloader ===
@@ -93,7 +95,17 @@ bool createFolder(const std::string& folderPath) {
 bool readCredentials(const std::string& folderPath) {
     // Construct the file path
     std::string filePath = folderPath + "/key";
+    
+    // print out
+    if (debugMode)
+    {
+        // Get the absolute path of the file
+        fs::path absolutePath = fs::absolute(filePath);
 
+        // Print the full system path of the key file
+        std::cout << "Attempting to read credentials from file: " << absolutePath << std::endl;
+    }
+    
     // Open the file
     std::ifstream file(filePath);
     if (!file.is_open()) {
@@ -153,7 +165,10 @@ string username, apiKey;
 
 vector<string> tags; // TODO make tag
 
-int main() {
+bool debugMode = false;
+
+int main()
+{
     //path to the secrets folder
     const string folderPath = "secrets";
 
@@ -161,7 +176,7 @@ int main() {
     if (!createFolder(folderPath)) {
         return 1;
     }
-
+    
     // Read credentials from file
     if (!readCredentials(folderPath)) {
         cout << "No credentials found." << endl << "Please enter your credentials:" << endl;
@@ -169,6 +184,6 @@ int main() {
             return 1;
         }
     }
-
+    cout << username << endl << apiKey << endl;
     return 0;
 }

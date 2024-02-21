@@ -19,4 +19,7 @@ extern string username;
 // the api key
 extern string apiKey;
 
+//debug
+extern bool debugMode;
+
 #endif /* main_h */
