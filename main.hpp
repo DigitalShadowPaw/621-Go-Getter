@@ -12,6 +12,10 @@
 #include <sys/stat.h>
 #include <vector>
 
+#include <chrono>
+#include <thread>
+
+
 using namespace std;
 
 // folders paths

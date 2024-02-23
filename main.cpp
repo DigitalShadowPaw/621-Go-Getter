@@ -117,6 +117,9 @@ size_t writeCallback(void *contents, size_t size, size_t nmemb, string *buffer)
 }
 
 string getResponse (string url){
+    // Wait to avoid overwhelming the server
+    this_thread::sleep_for(chrono::seconds(1));
+    
     string response;
     
     // Initialize libcurl
@@ -157,32 +160,105 @@ string getResponse (string url){
     return response;
 }
 
-//TODO
-string urlConstrokter(int postID)// TODO make the function witch make the url
+string urlConstructor(int postID)// TODO make the function witch make the url
 {
-    return "test";
+    return "https://e621.net/posts/" + to_string(postID) + ".json";
 }
 
-//TODO
-void postDownloader(int postID){
-    json jsonData = json::parse(getResponse(urlConstrokter(postID)));
+void postDownloader(const string fileToDownload, const string filename, const string& poolPath, int postID, ofstream& outputFile){
+    // Wait to avoid overwhelming the server
+    this_thread::sleep_for(chrono::seconds(1));
+
+    //string testurl = urlConstructor(postID);
+    //string res = getResponse(testurl);
+    //json jsonData = json::parse(res);
+    
+    //string fileToDownload = jsonData["post"]["file"]["url"];
+    //string filename = jsonData["post"]["file"]["md5"];
+
+    // Initialize libcurl
+    curl_global_init(CURL_GLOBAL_ALL);
+
+    // Create a CURL handle
+    CURL *curl = curl_easy_init();
+    if (curl) {
+        // Set the URL to download
+        curl_easy_setopt(curl, CURLOPT_URL, fileToDownload.c_str());
+        
+        // Set the user agent
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, "621-go-Getter/0.1 (by ShadowDarkPaw on e621)");
+
+        // Set the callback function to write data to the file
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &outputFile);
+        
+        // Perform the request
+        CURLcode res = curl_easy_perform(curl);
+        if (res != CURLE_OK) {
+            std::cerr << "Failed to download file: " << curl_easy_strerror(res) << std::endl;
+        }
+
+        // Clean up
+        curl_easy_cleanup(curl);
+    } else {
+        std::cerr << "Failed to initialize libcurl" << std::endl;
+    }
+
+    // Clean up libcurl
+    curl_global_cleanup();
+}
+
+void removeDoubleQuotes(std::string& str) {
+    str.erase(std::remove_if(str.begin(), str.end(), [](char c) {
+        return c == '"';
+    }), str.end());
 }
 
 void poolDownloader(string url){
+    vector<int> posts;
+    string poolsPath;
     // Parse the JSON string
     try {
-        json jsonData = json::parse(getResponse(url));
+        string response = getResponse(url);
+        json jsonData = json::parse(response);
         
-        string poolsPath = poolsFolder + "/" + (string)jsonData["name"];
+        poolsPath = poolsFolder + "/" + to_string(jsonData["name"]);
+        removeDoubleQuotes(poolsPath);
         
         createFolder(poolsPath);
         
         for (const auto& value : jsonData["post_ids"]) {
-            postDownloader(value);
+            if (value.is_number()) {
+                posts.push_back(value);
+            } else {
+                cout << "Dont a int" << endl;
+            }
         }
         
     } catch (json::exception& e){
-        cerr << "Failed to parse JSON: " << e.what() << endl;
+        cerr << "Failed to parse JSON in poolDownloader: " << e.what() << endl;
+    }
+    
+    // Using a range-based for loop (available in C++11 and later)
+    for (const auto& postID : posts) {
+        //std::cout << "Post ID: " << post << std::endl;
+        string testurl = urlConstructor(postID);
+        string res = getResponse(testurl);
+        json jsonData = json::parse(res);
+        
+        string fileToDownload = jsonData["post"]["file"]["url"];
+        string filename = jsonData["post"]["file"]["md5"];
+        
+        ofstream outputFile(poolsPath + "/" + filename, ios::binary);
+        if (!outputFile.is_open()) {
+            std::cerr << "Failed to open file for writing" << endl;
+            cin.ignore();
+        }
+        
+        postDownloader(fileToDownload, filename + ".png", poolsPath, postID, outputFile);
+        //TODO here it cant close the file / it creates the file it need to download and the fail?
+        // Close the file after the function call
+        outputFile.close();
     }
 }
 
