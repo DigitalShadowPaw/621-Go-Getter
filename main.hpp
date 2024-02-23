@@ -14,6 +14,11 @@
 
 using namespace std;
 
+// folders paths
+const string secretsFolder = "secrets";
+const string poolsFolder = "pools";
+
+
 // the username
 extern string username;
 // the api key
