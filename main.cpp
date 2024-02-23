@@ -4,6 +4,7 @@
 //
 #include "main.hpp"
 #include <curl/curl.h>
+#include <json.hpp>
 
 namespace fs = std::filesystem;
 
