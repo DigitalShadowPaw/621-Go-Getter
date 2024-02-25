@@ -19,9 +19,9 @@
 using namespace std;
 
 // folders paths
-const string secretsFolder = "secrets";
-const string poolsFolder = "pools";
-const string DataFolder = "Data";
+extern const string secretsFolder = "secrets";
+extern const string poolsFolder = "pools";
+extern const string DataFolder = "Data";
 
 
 // the username
