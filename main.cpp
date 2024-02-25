@@ -116,6 +116,13 @@ size_t writeCallback(void *contents, size_t size, size_t nmemb, string *buffer)
     return totalSize;
 }
 
+// Download data
+size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+    size_t written = fwrite(ptr, size, nmemb, stream);
+    return written;
+}
+
+
 string getResponse (string url){
     // Wait to avoid overwhelming the server
     this_thread::sleep_for(chrono::seconds(1));
@@ -176,36 +183,31 @@ void postDownloader(const string fileToDownload, const string filename, const st
     //string fileToDownload = jsonData["post"]["file"]["url"];
     //string filename = jsonData["post"]["file"]["md5"];
 
-    // Initialize libcurl
-    curl_global_init(CURL_GLOBAL_ALL);
+    std::string url = fileToDownload;
+    std::string filepath = poolPath + "/" + filename;
 
-    // Create a CURL handle
+    FILE *fp = fopen(filepath.c_str(), "wb");
+    if (!fp) {
+        std::cerr << "Error opening file for writing" << std::endl;
+        return;
+    }
+
     CURL *curl = curl_easy_init();
     if (curl) {
-        // Set the URL to download
-        curl_easy_setopt(curl, CURLOPT_URL, fileToDownload.c_str());
-        
-        // Set the user agent
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_USERAGENT, "621-go-Getter/0.1 (by ShadowDarkPaw on e621)");
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
 
-        // Set the callback function to write data to the file
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &outputFile);
-        
-        // Perform the request
         CURLcode res = curl_easy_perform(curl);
         if (res != CURLE_OK) {
             std::cerr << "Failed to download file: " << curl_easy_strerror(res) << std::endl;
         }
 
-        // Clean up
         curl_easy_cleanup(curl);
-    } else {
-        std::cerr << "Failed to initialize libcurl" << std::endl;
     }
 
-    // Clean up libcurl
-    curl_global_cleanup();
+    fclose(fp);
 }
 
 void removeDoubleQuotes(std::string& str) {
