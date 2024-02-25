@@ -108,8 +108,51 @@ bool saveCredentials(const string& folderPath) {
 
 // === Begin  curl downloader ===
 
+bool is_md5_in_checklist(const string& md5, const string& checkFile) {
+    ifstream file(checkFile);
+    if (!file.is_open()) {
+        cerr << "Error opening checklist file: " << checkFile << endl;
+        return false;
+    }
+
+    unordered_set<string> checklist;
+    string line;
+    while (getline(file, line)) {
+        checklist.insert(line);
+    }
+
+    file.close();
+
+    return checklist.find(md5) != checklist.end();
+}
+
+void add_md5_to_checklist(const string& md5, const string& checkFile) {
+    ofstream file(checkFile, ios::app);
+    if (!file.is_open()) {
+        cerr << "Error opening checklist file: " << checkFile << endl;
+        return;
+    }
+
+    file << md5 << endl;
+    file.close();
+}
+
+bool check_and_add_md5(const string& md5)
+{
+    const string checkFile = DataFolder + "/md5.txt";
+    if (!is_md5_in_checklist(md5, checkFile)) {
+        cout << "MD5 not found in checklist. Adding to the list..." << endl;
+        add_md5_to_checklist(md5, checkFile);
+        return true;
+    } else {
+        cout << "MD5 found in checklist. File can be downloaded." << endl;
+        return false;
+    }
+}
+
+
 // Callback function to write the received data to a string
-size_t writeCallback(void *contents, size_t size, size_t nmemb, string *buffer)
+size_t writeCallback (void *contents, size_t size, size_t nmemb, string *buffer)
 {
     size_t totalSize = size * nmemb;
     buffer->append((char *)contents, totalSize);
@@ -117,7 +160,7 @@ size_t writeCallback(void *contents, size_t size, size_t nmemb, string *buffer)
 }
 
 // Download data
-size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+size_t write_data (void *ptr, size_t size, size_t nmemb, FILE *stream) {
     size_t written = fwrite(ptr, size, nmemb, stream);
     return written;
 }
@@ -172,7 +215,7 @@ string urlConstructor(int postID)// TODO make the function witch make the url
     return "https://e621.net/posts/" + to_string(postID) + ".json";
 }
 
-void postDownloader(const string fileToDownload, const string filename, const string& poolPath, int postID, ofstream& outputFile){
+void postDownloader(const string url, const string filename, const string& poolPath, int postID, ofstream& outputFile){
     // Wait to avoid overwhelming the server
     this_thread::sleep_for(chrono::seconds(1));
 
@@ -183,12 +226,11 @@ void postDownloader(const string fileToDownload, const string filename, const st
     //string fileToDownload = jsonData["post"]["file"]["url"];
     //string filename = jsonData["post"]["file"]["md5"];
 
-    std::string url = fileToDownload;
-    std::string filepath = poolPath + "/" + filename;
+    string filepath = poolPath + "/" + filename;
 
     FILE *fp = fopen(filepath.c_str(), "wb");
     if (!fp) {
-        std::cerr << "Error opening file for writing" << std::endl;
+        cerr << "Error opening file for writing" << endl;
         return;
     }
 
@@ -201,7 +243,7 @@ void postDownloader(const string fileToDownload, const string filename, const st
 
         CURLcode res = curl_easy_perform(curl);
         if (res != CURLE_OK) {
-            std::cerr << "Failed to download file: " << curl_easy_strerror(res) << std::endl;
+            cerr << "Failed to download file: " << curl_easy_strerror(res) << endl;
         }
 
         curl_easy_cleanup(curl);
@@ -210,8 +252,8 @@ void postDownloader(const string fileToDownload, const string filename, const st
     fclose(fp);
 }
 
-void removeDoubleQuotes(std::string& str) {
-    str.erase(std::remove_if(str.begin(), str.end(), [](char c) {
+void removeDoubleQuotes(string& str) {
+    str.erase(remove_if(str.begin(), str.end(), [](char c) {
         return c == '"';
     }), str.end());
 }
@@ -243,24 +285,30 @@ void poolDownloader(string url){
     
     // Using a range-based for loop (available in C++11 and later)
     for (const auto& postID : posts) {
-        //std::cout << "Post ID: " << post << std::endl;
+        //cout << "Post ID: " << post << endl;
         string testurl = urlConstructor(postID);
         string res = getResponse(testurl);
         json jsonData = json::parse(res);
         
-        string fileToDownload = jsonData["post"]["file"]["url"];
-        string filename = jsonData["post"]["file"]["md5"];
+        if (check_and_add_md5(jsonData["post"]["file"]["md5"])){
         
-        ofstream outputFile(poolsPath + "/" + filename, ios::binary);
-        if (!outputFile.is_open()) {
-            std::cerr << "Failed to open file for writing" << endl;
-            cin.ignore();
+            string fileToDownload = jsonData["post"]["file"]["url"];
+            string filename = jsonData["post"]["file"]["md5"];
+            filename = filename + ".png";
+            
+            ofstream outputFile(poolsPath + "/" + filename, ios::binary);
+            if (!outputFile.is_open()) {
+            cerr << "Failed to open file for writing" << endl;
+                cin.ignore();
+            }
+            
+            postDownloader(fileToDownload, filename, poolsPath, postID, outputFile);
+            //TODO here it cant close the file / it creates the file it need to download and the fail?
+            // Close the file after the function call
+            outputFile.close();
+        }else{
+            
         }
-        
-        postDownloader(fileToDownload, filename + ".png", poolsPath, postID, outputFile);
-        //TODO here it cant close the file / it creates the file it need to download and the fail?
-        // Close the file after the function call
-        outputFile.close();
     }
 }
 
@@ -286,6 +334,10 @@ int main()
     if (!createFolder(poolsFolder)) {
         return 1;
     }
+    if (!createFolder(DataFolder)) {
+        return 1;
+    }
+
     
     
     // Read credentials from file
