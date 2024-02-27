@@ -275,6 +275,29 @@ int postDownloader(const string& poolPath, int postID){
     return false;
 }
 
+void poolList(int number) {
+    const std::string poolDir = poolsFolder + "/";
+    const std::string poolFile = poolDir + "pool.txt";
+
+    // Create the pool file if it doesn't exist
+   /* std::ifstream file(poolFile);
+    if (!file.is_open()) {
+        if (!create_pool_file(poolFile))
+            return;
+    }
+    file.close();*/
+
+    // Append the number to the pool file
+    std::ofstream outfile(poolFile, std::ios::app);
+    if (!outfile.is_open()) {
+        std::cerr << "Error opening pool file: " << poolFile << std::endl;
+        return;
+    }
+    outfile << number << std::endl;
+    outfile.close();
+    std::cout << "Number added to the pool: " << number << std::endl;
+}
+
 void poolDownloader(string url){
     vector<int> posts;
     string poolsPath;
