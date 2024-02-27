@@ -110,20 +110,36 @@ bool saveCredentials(const string& folderPath) {
 
 bool is_md5_in_checklist(const string& md5) {
     const string checkFile = DataFolder + "/md5.txt";
-    ifstream file(checkFile, ios::app);
+
+    // Check if the file exists, if not, create it
+    ifstream file(checkFile);
     if (!file.is_open()) {
+        cerr << "Checklist file doesn't exist. Creating..." << endl;
+        ofstream createFile(checkFile);
+        if (!createFile.is_open()) {
+            cerr << "Error creating checklist file: " << checkFile << endl;
+            return false;
+        }
+        createFile.close();
+        cout << "Checklist file created successfully." << endl;
+        return false; // Since the file is created but empty, return false
+    }
+    file.close();
+
+    // File exists, proceed with reading and checking MD5
+    ifstream readFile(checkFile);
+    if (!readFile.is_open()) {
         cerr << "Error opening checklist file: " << checkFile << endl;
         return false;
     }
-    
+
     unordered_set<string> checklist;
     string line;
-    while (getline(file, line)) {
+    while (getline(readFile, line)) {
         checklist.insert(line);
     }
 
-    file.close();
-
+    readFile.close();
     return checklist.find(md5) != checklist.end();
 }
 
@@ -290,22 +306,17 @@ void poolDownloader(string url){
     
     // Using a range-based for loop (available in C++11 and later)
     for (const auto& postID : posts) {
-        //cout << "Post ID: " << post << endl;
-        string testurl = urlConstructor(postID);
-        string res = getResponse(testurl);
-        json jsonData = json::parse(res);
+        json jsonData = json::parse(getResponse(urlConstructor(postID)));
         
-        if (!is_md5_in_checklist(jsonData["post"]["file"]["md5"])){
+        if(!is_md5_in_checklist(jsonData["post"]["file"]["md5"])){
             if(!postDownloader(poolsPath, postID)){
                 add_md5_to_checklist(jsonData["post"]["file"]["md5"]);
             }else{
+                cout << "error downloading the file. Please check your internet" << endl;
                 return;
             }
-            //TODO here it cant close the file / it creates the file it need to download and the fail?
-            // Close the file after the function call
-            //outputFile.close();
         }else{
-            
+            //cout << "md5 has been downloaded" << endl;
         }
     }
 }
