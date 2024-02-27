@@ -409,7 +409,7 @@ void autoDownloadPool()
     string line;
     while (getline(file, line)) {
         // Process each line
-       // poolDownloader(string url);
+        poolDownloader("https://e621.net/pools/" + line + ".json");
     }
 
 
@@ -464,7 +464,7 @@ void menu() {
             }
             break;
         case 2:
-            cout << "You chose to download." << endl;
+            cout << "Auto Downloed all pools." << endl;
             autoDownloadPool();
             break;
         case 9:
