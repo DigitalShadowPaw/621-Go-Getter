@@ -275,27 +275,52 @@ int postDownloader(const string& poolPath, int postID){
     return false;
 }
 
-void poolList(int number) {
-    const std::string poolDir = poolsFolder + "/";
-    const std::string poolFile = poolDir + "pool.txt";
-
-    // Create the pool file if it doesn't exist
-   /* std::ifstream file(poolFile);
+bool create_pool_file(const string& filename) {
+    ofstream file(filename);
     if (!file.is_open()) {
-        if (!create_pool_file(poolFile))
-            return;
+        cerr << "Error creating pool file: " << filename << endl;
+        return false;
     }
-    file.close();*/
+    //cout << "Pool file created successfully: " << filename << endl;
+    return true;
+}
 
-    // Append the number to the pool file
-    std::ofstream outfile(poolFile, std::ios::app);
-    if (!outfile.is_open()) {
-        std::cerr << "Error opening pool file: " << poolFile << std::endl;
+void poolList(int number) {
+    const string poolDir = poolsFolder + "/";
+    const string poolFile = poolDir + "pool.txt";
+    
+    // Create the pool file if it doesn't exist
+     ifstream file(poolFile);
+     if (!file.is_open()) {
+         if (!create_pool_file(poolFile))
+                return;
+     }
+     file.close();
+
+    // Read existing numbers from the file into a set
+    ifstream infile(poolFile);
+    unordered_set<int> numbers;
+    int num;
+    while (infile >> num) {
+        numbers.insert(num);
+    }
+    infile.close();
+
+    // Check if the number is already in the set
+    if (numbers.find(number) != numbers.end()) {
+        cout << "Number " << number << " already exists in the pool." << endl;
         return;
     }
-    outfile << number << std::endl;
+
+    // Append the number to the pool file
+    ofstream outfile(poolFile, ios::app);
+    if (!outfile.is_open()) {
+        cerr << "Error opening pool file: " << poolFile << endl;
+        return;
+    }
+    outfile << number << endl;
     outfile.close();
-    std::cout << "Number added to the pool: " << number << std::endl;
+    cout << "Number added to the pool: " << number << endl;
 }
 
 void poolDownloader(string url){
@@ -344,30 +369,30 @@ void poolDownloader(string url){
 
 // === Menu ==
 void menu() {
-    std::cout << "Menu:" << std::endl;
-    std::cout << "1. Add Pool" << std::endl;
-    std::cout << "2. Download" << std::endl;
-    std::cout << "3. Exit" << std::endl;
+    cout << "Menu:" << endl;
+    cout << "1. Add Pool" << endl;
+    cout << "2. Download" << endl;
+    cout << "3. Exit" << endl;
     
     int choice;
-    std::cout << "Enter your choice: ";
-    std::cin >> choice;
+    cout << "Enter your choice: ";
+    cin >> choice;
 
     switch (choice) {
         case 1:
-            std::cout << "You chose to add a pool." << std::endl;
+            cout << "You chose to add a pool." << endl;
             // Add function call for adding a pool
             break;
         case 2:
-            std::cout << "You chose to download." << std::endl;
+            cout << "You chose to download." << endl;
             // Add function call for downloading
             break;
         case 3:
-            std::cout << "Exiting the program." << std::endl;
+            cout << "Exiting the program." << endl;
             exit(0);
             break;
         default:
-            std::cerr << "Invalid choice. Please choose again." << std::endl;
+            cerr << "Invalid choice. Please choose again." << endl;
             menu();
             break;
     }
@@ -375,15 +400,15 @@ void menu() {
 
 
 void print_help() {
-    std::cout << "Usage: program_name [OPTION]" << std::endl;
-    std::cout << "Options:" << std::endl;
-    std::cout << "-h, --help     Display this help message" << std::endl;
-    std::cout << "-v, --version  Display version information" << std::endl;
+    cout << "Usage: program_name [OPTION]" << endl;
+    cout << "Options:" << endl;
+    cout << "-h, --help     Display this help message" << endl;
+    cout << "-v, --version  Display version information" << endl;
     // Add more options if needed
 }
 
 void print_version() {
-    std::cout << "Program Version 1.0" << std::endl;
+    cout << "Program Version 1.0" << endl;
 }
 // === END Menu ==
 
@@ -426,14 +451,14 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    std::string arg = argv[1];
+    string arg = argv[1];
     if (arg == "-h" || arg == "--help") {
         print_help();
     } else if (arg == "-v" || arg == "--version") {
         print_version();
     } else {
         // Invalid option, display menu
-        std::cerr << "Invalid option. Displaying menu:" << std::endl;
+        cerr << "Invalid option. Displaying menu:" << endl;
         menu();
     }
 
