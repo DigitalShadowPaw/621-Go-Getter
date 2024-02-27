@@ -286,7 +286,7 @@ bool create_pool_file(const string& filename) {
 }
 
 void poolList(int number) {
-    const string poolDir = poolsFolder + "/";
+    const string poolDir = DataFolder + "/";
     const string poolFile = poolDir + "pool.txt";
     
     // Create the pool file if it doesn't exist
@@ -367,27 +367,107 @@ void poolDownloader(string url){
 
 // === End curl downloader ===
 
+int extract_number_from_url(const string& url) {
+    // Find the position of the last '/'
+    size_t last_slash_pos = url.find_last_of('/');
+    if (last_slash_pos == string::npos) {
+        // URL format is invalid
+        return 0;
+    }
+
+    // Extract the substring starting from last '/' to '.json'
+    string sub = url.substr(last_slash_pos + 1);
+
+    // Find the position of '.json'
+    size_t json_pos = sub.find(".json");
+    if (json_pos == string::npos) {
+        // URL format is invalid
+        return 0;
+    }
+
+    // Extract the substring containing the number
+    string number_str = sub.substr(0, json_pos);
+
+    return stoi(number_str);
+}
+
+bool isValidURL(const string& url) {
+    // Regular expression for a simple URL pattern
+    regex urlRegex("(https?|ftp)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
+
+    return regex_match(url, urlRegex);
+}
+
+void autoDownloadPool()
+{
+    ifstream file(DataFolder + "/pool.txt");
+        if (!file.is_open()) {
+            cerr << "Error opening file: " << DataFolder << "/pool.txt" << endl;
+            return;
+        }
+    
+    string line;
+    while (getline(file, line)) {
+        // Process each line
+       // poolDownloader(string url);
+    }
+
+
+}
+
 // === Menu ==
 void menu() {
     cout << "Menu:" << endl;
     cout << "1. Add Pool" << endl;
-    cout << "2. Download" << endl;
-    cout << "3. Exit" << endl;
+    cout << "2. Auto Downloed all pools" << endl;
+    cout << "9. Exit" << endl;
+    
+    string poolAnswer = "";
+    int poolNumber;
+    bool isInteger;
     
     int choice;
     cout << "Enter your choice: ";
     cin >> choice;
-
+   
     switch (choice) {
         case 1:
-            cout << "You chose to add a pool." << endl;
-            // Add function call for adding a pool
+            cout << "Please type the pool id or the url to the pool." << endl;
+            cin >> poolAnswer;
+            
+            // Check if the input string is a valid integer
+            isInteger = true;
+            for (char c : poolAnswer) {
+                if (!isdigit(c)) {
+                    isInteger = false;
+                    break;
+                }
+            }
+            
+            if (isInteger) {
+                // Convert the input string to an integer
+                poolNumber = stoi(poolAnswer);
+                poolList(poolNumber);
+            } else {
+                // Check if the input string is a valid URL
+                if (isValidURL(poolAnswer)) {
+                    // Extract the number from the URL and pass it to poolList
+                    poolNumber = extract_number_from_url(poolAnswer);
+                    if (poolNumber != 0) {
+                        poolList(poolNumber);
+                    } else {
+                        cout << "Invalid URL format." << endl;
+                    }
+                } else {
+                    cout << "Invalid input. Please enter a valid URL or a valid integer." << endl;
+                }
+            }
             break;
         case 2:
             cout << "You chose to download." << endl;
-            // Add function call for downloading
+            autoDownloadPool();
             break;
-        case 3:
+        case 9:
             cout << "Exiting the program." << endl;
             exit(0);
             break;
@@ -443,8 +523,6 @@ int main(int argc, char* argv[])
             return 1;
         }
     }
-    
-    poolDownloader("https://e621.net/pools/38173.json");
     
     if (argc == 1) {
         menu();
