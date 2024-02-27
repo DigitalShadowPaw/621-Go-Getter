@@ -319,6 +319,51 @@ void poolDownloader(string url){
 
 // === End curl downloader ===
 
+// === Menu ==
+void menu() {
+    std::cout << "Menu:" << std::endl;
+    std::cout << "1. Add Pool" << std::endl;
+    std::cout << "2. Download" << std::endl;
+    std::cout << "3. Exit" << std::endl;
+    
+    int choice;
+    std::cout << "Enter your choice: ";
+    std::cin >> choice;
+
+    switch (choice) {
+        case 1:
+            std::cout << "You chose to add a pool." << std::endl;
+            // Add function call for adding a pool
+            break;
+        case 2:
+            std::cout << "You chose to download." << std::endl;
+            // Add function call for downloading
+            break;
+        case 3:
+            std::cout << "Exiting the program." << std::endl;
+            exit(0);
+            break;
+        default:
+            std::cerr << "Invalid choice. Please choose again." << std::endl;
+            menu();
+            break;
+    }
+}
+
+
+void print_help() {
+    std::cout << "Usage: program_name [OPTION]" << std::endl;
+    std::cout << "Options:" << std::endl;
+    std::cout << "-h, --help     Display this help message" << std::endl;
+    std::cout << "-v, --version  Display version information" << std::endl;
+    // Add more options if needed
+}
+
+void print_version() {
+    std::cout << "Program Version 1.0" << std::endl;
+}
+// === END Menu ==
+
 // the number of posts it get at a time min 1, max 320
 extern const int limit = 10;
 
@@ -329,7 +374,7 @@ vector<string> tags; // TODO make tag
 
 bool debugMode = false;
 
-int main()
+int main(int argc, char* argv[])
 {
     
     // Create folder if it doesn't exist
@@ -343,8 +388,6 @@ int main()
         return 1;
     }
 
-    
-    
     // Read credentials from file
     if (!readCredentials(secretsFolder)) {
         cout << "No credentials found." << endl << "Please enter your credentials:" << endl;
@@ -354,6 +397,24 @@ int main()
     }
     
     poolDownloader("https://e621.net/pools/38173.json");
+    
+    if (argc == 1) {
+        menu();
+        return 0;
+    }
+
+    std::string arg = argv[1];
+    if (arg == "-h" || arg == "--help") {
+        print_help();
+    } else if (arg == "-v" || arg == "--version") {
+        print_version();
+    } else {
+        // Invalid option, display menu
+        std::cerr << "Invalid option. Displaying menu:" << std::endl;
+        menu();
+    }
+
+
     
     return 0;
 }
