@@ -1,8 +1,3 @@
-//
-//  main.h
-//  621-Go-Getter
-//
-
 #ifndef main_h
 #define main_h
 
@@ -33,4 +28,4 @@ extern string apiKey;
 //debug
 extern bool debugMode;
 
-#endif /* main_h */
+#endif

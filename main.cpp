@@ -1,7 +1,3 @@
-//
-//  main.cpp
-//  621-Go-Getter
-//
 #include "main.hpp"
 #include <curl/curl.h>
 #include <json.hpp>
