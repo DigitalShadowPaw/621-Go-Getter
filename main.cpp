@@ -14,7 +14,6 @@ using json = nlohmann::json;
 
 // === Begin creating secrets folder and key file ===
 
-// Function to create folder if it doesn't exist
 bool createFolder(const string& folderPath) {
     struct stat info;
     if (stat(folderPath.c_str(), &info) != 0) {
@@ -29,11 +28,10 @@ bool createFolder(const string& folderPath) {
         }
     } else if (info.st_mode & S_IFDIR) {
         // Folder exists
-        // cout << "Folder already exists: " << folderPath << endl;
         return true;
     } else {
         // Path exists but is not a folder
-        cerr << "Path already exists but is not a folder: " << folderPath << endl;
+        cout << "Path already exists but is not a folder: " << folderPath << endl;
         return false;
     }
 }
