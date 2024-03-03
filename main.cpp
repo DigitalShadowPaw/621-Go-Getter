@@ -432,36 +432,47 @@ void menu() {
    
     switch (choice) {
         case 1:
-            cout << "Please type the pool id or the url to the pool." << endl;
-            cin >> poolAnswer;
-            
-            // Check if the input string is a valid integer
-            isInteger = true;
-            for (char c : poolAnswer) {
-                if (!isdigit(c)) {
-                    isInteger = false;
+            while (true) {
+                cout << "Please type the pool id or the url to the pool." << endl;
+                cout << "type 'e' for exit" << endl;
+                poolAnswer = "";
+                cin >> poolAnswer;
+                
+                if(poolAnswer == "e")
+                {
                     break;
                 }
-            }
-            
-            if (isInteger) {
-                // Convert the input string to an integer
-                poolNumber = stoi(poolAnswer);
-                poolList(poolNumber);
-            } else {
-                // Check if the input string is a valid URL
-                if (isValidURL(poolAnswer)) {
-                    // Extract the number from the URL and pass it to poolList
-                    poolNumber = extract_number_from_url(poolAnswer);
-                    if (poolNumber != 0) {
-                        poolList(poolNumber);
-                    } else {
-                        cout << "Invalid URL format." << endl;
+                
+                // Check if the input string is a valid integer
+                isInteger = true;
+                for (char c : poolAnswer) {
+                    if (!isdigit(c)) {
+                        isInteger = false;
+                        break;
                     }
-                } else {
-                    cout << "Invalid input. Please enter a valid URL or a valid integer." << endl;
                 }
+                
+                if (isInteger) {
+                    // Convert the input string to an integer
+                    poolNumber = stoi(poolAnswer);
+                    poolList(poolNumber);
+                } else {
+                    // Check if the input string is a valid URL
+                    if (isValidURL(poolAnswer)) {
+                        // Extract the number from the URL and pass it to poolList
+                        poolNumber = extract_number_from_url(poolAnswer);
+                        if (poolNumber != 0) {
+                            poolList(poolNumber);
+                        } else {
+                            cout << "Invalid URL format." << endl;
+                        }
+                    } else {
+                        cout << "Invalid input. Please enter a valid URL or a valid integer." << endl;
+                    }
+                }
+
             }
+            menu();
             break;
         case 2:
             cout << "Auto Downloed all pools." << endl;
