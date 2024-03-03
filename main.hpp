@@ -20,12 +20,10 @@ extern const string secretsFolder = "secrets";
 extern const string poolsFolder = "pools";
 extern const string DataFolder = "Data";
 
-
 // the username
 extern string username;
 // the api key
 extern string apiKey;
-
 
 //debug
 extern bool debugMode;

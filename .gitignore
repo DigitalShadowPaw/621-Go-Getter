@@ -522,3 +522,6 @@ secrets/
 621-Go-Getter.xcodeproj/
 #End xcode
 621-Go-Getter.xcodeproj/project.pbxproj
+
+#json.hpp
+json.hpp

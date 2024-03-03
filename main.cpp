@@ -1,6 +1,9 @@
 #include "main.hpp"
+
+//download https://github.com/nlohmann/json/releases
+#include "json.hpp"
+
 #include <curl/curl.h>
-#include <json.hpp>
 
 namespace fs = filesystem;
 
@@ -504,12 +507,12 @@ void print_version() {
 // === END Menu ==
 
 // the number of posts it get at a time min 1, max 320
-extern const int limit = 10;
+//extern const int limit = 10;
 
 // username and api key
 string username, apiKey;
 
-vector<string> tags; // TODO make tag
+//vector<string> tags; // TODO make tag
 
 bool debugMode = false;
 
