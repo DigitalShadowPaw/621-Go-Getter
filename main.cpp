@@ -1,6 +1,4 @@
 #include "main.hpp"
-
-//download https://github.com/nlohmann/json/releases
 #include "json.hpp"
 
 #include <curl/curl.h>
@@ -11,6 +9,8 @@ using namespace std;
 
 using json = nlohmann::json;
 
+//string for the curl User agent
+const string userAgent = "621-go-Getter/0.1 (by ShadowDarkPaw on e621)";
 
 // === Begin creating secrets folder and key file ===
 
@@ -20,7 +20,7 @@ bool createFolder(const string& folderPath) {
         // Folder doesn't exist, try to create it
         int status = mkdir(folderPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
         if (status == 0) {
-            cout << "Created folder: " << folderPath << endl;
+            clog << "Created folder: " << folderPath << endl;
             return true;
         } else {
             cerr << "Failed to create folder: " << folderPath << endl;
@@ -31,7 +31,7 @@ bool createFolder(const string& folderPath) {
         return true;
     } else {
         // Path exists but is not a folder
-        cout << "Path already exists but is not a folder: " << folderPath << endl;
+        clog << "Path already exists but is not a folder: " << folderPath << endl;
         return false;
     }
 }
@@ -49,7 +49,7 @@ bool readCredentials(const string& folderPath) {
         fs::path absolutePath = fs::absolute(filePath);
 
         // Print the full system path of the key file
-        cout << "Attempting to read credentials from file: " << absolutePath << endl;
+        clog << "Attempting to read credentials from file: " << absolutePath << endl;
     }
     
     // Open the file
@@ -118,7 +118,7 @@ bool is_md5_in_checklist(const string& md5) {
             return false;
         }
         createFile.close();
-        cout << "Checklist file created successfully." << endl;
+        clog << "Checklist file created successfully." << endl;
         return false; // Since the file is created but empty, return false
     }
     file.close();
@@ -152,22 +152,20 @@ void add_md5_to_checklist(const string& md5) {
     file.close();
 }
 
-bool check_and_add_md5(const string& md5)
-{
+bool check_and_add_md5(const string& md5){
     if (!is_md5_in_checklist(md5)) {
-        cout << "MD5 not found in checklist. Adding to the list..." << endl;
+        clog << "MD5 not found in checklist. Adding to the list..." << endl;
         add_md5_to_checklist(md5);
         return true;
     } else {
-        cout << "MD5 found in checklist. File can be downloaded." << endl;
+        clog << "MD5 found in checklist. File can be downloaded." << endl;
         return false;
     }
 }
 
 
 // Callback function to write the received data to a string
-size_t writeCallback (void *contents, size_t size, size_t nmemb, string *buffer)
-{
+size_t writeCallback (void *contents, size_t size, size_t nmemb, string *buffer){
     size_t totalSize = size * nmemb;
     buffer->append((char *)contents, totalSize);
     return totalSize;
@@ -191,6 +189,7 @@ string getResponse (string url){
 
     // Create a CURL handle
     CURL *curl = curl_easy_init();
+    
     if (curl) {
         // Set the URL to fetch
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
@@ -224,8 +223,8 @@ string getResponse (string url){
     return response;
 }
 
-string urlConstructor(int postID)// TODO make the function witch make the url
-{
+// Make the url to the posts
+string urlConstructor(int postID){
     return "https://e621.net/posts/" + to_string(postID) + ".json";
 }
 
@@ -238,10 +237,9 @@ void removeQuotes(string& str) {
 int postDownloader(const string& poolPath, int postID){
     // Wait to avoid overwhelming the server
     this_thread::sleep_for(chrono::seconds(1));
-
-    string testurl = urlConstructor(postID);
-    string res = getResponse(testurl);
-    json jsonData = json::parse(res);
+    
+    // First urlConstructor takes the postid in to make the url. Then we use getResponse to the the json from the site and thenn we parse the json
+    json jsonData = json::parse(getResponse(urlConstructor(postID)));
     
     string url = jsonData["post"]["file"]["url"];
     string filename = to_string(jsonData["post"]["file"]["md5"]) + "." + to_string(jsonData["post"]["file"]["ext"]);
@@ -309,7 +307,7 @@ void poolList(int number) {
 
     // Check if the number is already in the set
     if (numbers.find(number) != numbers.end()) {
-        cout << "Number " << number << " already exists in the pool." << endl;
+        clog << "Number " << number << " already exists in the pool." << endl;
         return;
     }
 
@@ -321,7 +319,7 @@ void poolList(int number) {
     }
     outfile << number << endl;
     outfile.close();
-    cout << "Number added to the pool: " << number << endl;
+    clog << "Number added to the pool: " << number << endl;
 }
 
 void poolDownloader(string url){
@@ -341,7 +339,7 @@ void poolDownloader(string url){
             if (value.is_number()) {
                 posts.push_back(value);
             } else {
-                cout << "Dont a int" << endl;
+                cerr << "Dont a int" << endl;
             }
         }
         
@@ -357,7 +355,7 @@ void poolDownloader(string url){
             if(!postDownloader(poolsPath, postID)){
                 add_md5_to_checklist(jsonData["post"]["file"]["md5"]);
             }else{
-                cout << "error downloading the file. Please check your internet" << endl;
+                cerr << "error downloading the file. Please check your internet" << endl;
                 return;
             }
         }else{
@@ -465,10 +463,10 @@ void menu() {
                         if (poolNumber != 0) {
                             poolList(poolNumber);
                         } else {
-                            cout << "Invalid URL format." << endl;
+                            cerr << "Invalid URL format." << endl;
                         }
                     } else {
-                        cout << "Invalid input. Please enter a valid URL or a valid integer." << endl;
+                        cerr << "Invalid input. Please enter a valid URL or a valid integer." << endl;
                     }
                 }
 
@@ -530,7 +528,7 @@ int main(int argc, char* argv[])
 
     // Read credentials from file
     if (!readCredentials(secretsFolder)) {
-        cout << "No credentials found." << endl << "Please enter your credentials:" << endl;
+        cerr << "No credentials found." << endl << "Please enter your credentials:" << endl;
         if (!saveCredentials(secretsFolder)) {
             return 1;
         }
